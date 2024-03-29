@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ restaurant_name }}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <header>
+        <h1>{{ restaurant_name }}</h1>
+        <img src="{{ restaurant_photo_url }}" alt="Фото ресторана" style="max-width: 100%; height: auto;">
+    </header>
+    <nav>
+        <!-- Навигационное меню, если необходимо -->
+    </nav>
+    <main>
+        {% block content %}
+        <!-- Основное содержимое страницы -->
+        {% endblock %}
+    </main>
+    <footer>
+        <p>© 2024 {{ restaurant_name }}. Все права защищены.</p>
+    </footer>
+</body>
+</html>

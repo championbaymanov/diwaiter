@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Список блюд</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        img {
+            width: 50px;
+            height: auto;
+        }
+        .checkbox {
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Список блюд</h1>
+    <table>
+    <thead>
+        <tr>
+            <th>Название</th>
+            <th>Фото</th>
+            <th>Цена</th>
+            <th>Категория</th>
+            <th>Активный</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for dish in object_list %}
+        <tr>
+            <td>{{ dish.title }}</td>
+            <td><img src="{{ dish.image.url }}" alt="{{ dish.name }}" style="width: 100px;"></td>
+            <td>{{ dish.price }}</td>
+            <td>{{ dish.categories }}</td>
+            <td>{{ dish.is_active|yesno:"Да,Нет" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5">Нет доступных блюд.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+</body>
+</html>

@@ -1,0 +1,47 @@
+version: '3'
+
+networks:
+  diwaiter-network:
+    driver: bridge
+
+services:
+
+  postgresql:
+    container_name: ${PROJECT_NAME}-postgresql
+    hostname: ${PROJECT_NAME}-postgresql
+    image: postgres:15
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${DB_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${DB_POSTGRES_NAME}
+      POSTGRES_HOST: ${DB_POSTGRES_HOST}
+      POSTGRES_PORT: ${DB_POSTGRES_PORT}
+#    env_file:
+#      - .docker/dev/postgresql/config.ini
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - ${POSTGRES_PORT:-5432}:5432
+    networks:
+      - fastapi-network
+    tty: true
+
+  redis:
+    container_name: ${PROJECT_NAME}-redis
+    hostname: ${PROJECT_NAME}-redis
+    image: redis:alpine
+    ports:
+      - ${REDIS_PORT:-6379}:6379
+    volumes:
+      - redis:/data/redis
+    tty: true
+    restart: unless-stopped
+    networks:
+      - fastapi-network
+
+volumes:
+  redis:
+    driver: local
+  postgres_data:
+    driver: local

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Добавление блюда</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        h2 {
+            color: #333;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+        }
+        input[type="text"],
+        input[type="number"],
+        input[type="file"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+        input[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+        input[type="checkbox"] {
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Добавить новое блюдо</h2>
+<!--        <form action="restaurant/dishes" method="post" enctype="multipart/form-data">-->
+        <form action="restaurant/dishes" method="post" enctype="multipart/form-data">
+
+            {% csrf_token %}
+            <label for="name">Название:</label>
+            <input type="text" id="name" name="name" required>
+
+            <label for="photo">Фото:</label>
+            <input type="file" id="photo" name="photo" accept="image/*">
+
+            <label for="price">Цена:</label>
+            <input type="number" id="price" name="price" step="0.01" required>
+
+            <label for="category">Категория:</label>
+            <select id="category" name="category" required>
+            <option value="">Выберите категорию...</option>
+            {% for category in categories %}
+            <option value="{{ category }}">{{ category }}</option>
+            {% endfor %}
+        </select>
+
+
+            <label for="description">Описание:</label>
+            <textarea id="description" name="description" rows="4"></textarea>
+
+            <label for="is_active">Активность:</label>
+            <input type="checkbox" id="is_active" name="is_active" checked>
+
+            <input type="submit" value="Сохранить">
+        </form>
+    </div>
+</body>
+</html>
