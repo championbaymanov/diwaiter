@@ -1,10 +1,32 @@
-version: '3'
-
 networks:
   diwaiter-network:
     driver: bridge
 
 services:
+
+  backend:
+    container_name: ${PROJECT_NAME}-backend
+    hostname: ${PROJECT_NAME}-backend
+    build:
+      context: ./
+      dockerfile: .docker/dev/backend/Dockerfile
+    env_file:
+      - .env
+    ports:
+      - ${PORT}:8000
+    volumes:
+      - ./:/home/app/backend
+      - static_volume:/home/app/backend/static
+      - media_volume:/home/app/backend/media
+    security_opt:
+      - seccomp:unconfined
+    tty: true
+    restart: unless-stopped
+    networks:
+      - diwaiter-network
+    depends_on:
+      - postgresql
+      - redis
 
   postgresql:
     container_name: ${PROJECT_NAME}-postgresql
@@ -12,19 +34,17 @@ services:
     image: postgres:15
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${DB_POSTGRES_USER}
-      POSTGRES_PASSWORD: ${DB_POSTGRES_PASSWORD}
-      POSTGRES_DB: ${DB_POSTGRES_NAME}
-      POSTGRES_HOST: ${DB_POSTGRES_HOST}
-      POSTGRES_PORT: ${DB_POSTGRES_PORT}
-#    env_file:
-#      - .docker/dev/postgresql/config.ini
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_NAME}
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - ${POSTGRES_PORT:-5432}:5432
     networks:
-      - fastapi-network
+      - diwaiter-network
     tty: true
 
   redis:
@@ -38,9 +58,25 @@ services:
     tty: true
     restart: unless-stopped
     networks:
-      - fastapi-network
+      - diwaiter-network
+
+  nginx:
+    container_name: ${PROJECT_NAME}-nginx
+    image: nginx:stable-alpine
+    ports:
+      - 80:80
+    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+    restart: unless-stopped
+    volumes:
+      - static_volume:/home/app/backend/static
+      - media_volume:/home/app/backend/media
+      - ./.docker/dev/nginx:/etc/nginx/conf.d
+    networks:
+      - diwaiter-network
 
 volumes:
+  static_volume:
+  media_volume:
   redis:
     driver: local
   postgres_data:

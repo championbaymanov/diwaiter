@@ -67,45 +67,23 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "conf.wsgi.application"
 
-# DATABASES = {
-#     # SQLITE
-#     "default": {
-#         "ENGINE": "django.db.backends.sqlite3",
-#         "NAME": BASE_DIR / "db.sqlite3",
-#         **env.dict("DB_OTHER_DATA")  # DB Other Settings
-#     }
-    # POSTGRES, MARIADB, MYSQL.
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'DiWaiter',
-#         'USER': 'diwaiter',
-#         'PASSWORD': '1234',
-#         'HOST': '127.0.0.1', # Или другой адрес сервера БД, если он не локальный
-#         'PORT': '5432', # Стандартный порт PostgreSQL
-#     }
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
-        'USER': 'postgres',
-        'PASSWORD': '1234',
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
-    }
-
-
-
-
+    # SQLITE
     # "default": {
-    #     "ENGINE": env.str("DB_ENGINE", ""),
-    #     "NAME": env.str("DB_NAME", ""),
-    #     "USER": env.str("DB_USER", ""),
-    #     "PASSWORD": env.str("DB_PASSWORD", ""),
-    #     "HOST": env.str("DB_HOST", ""),
-    #     "PORT": env.int("DB_PORT", ""),
-    #     **env.dict("DB_OTHER_DATA"),
-    # },
+    #     "ENGINE": "django.db.backends.sqlite3",
+    #     "NAME": BASE_DIR / "db.sqlite3",
+    #     **env.dict("DB_OTHER_DATA")  # DB Other Settings
+    # }
+    # POSTGRES, MARIADB, MYSQL.
+    "default": {
+        "ENGINE": env.str("DB_ENGINE", ""),
+        "NAME": env.str("POSTGRES_NAME", ""),
+        "USER": env.str("POSTGRES_USER", ""),
+        "PASSWORD": env.str("POSTGRES_PASSWORD", ""),
+        "HOST": env.str("POSTGRES_HOST", ""),
+        "PORT": env.int("POSTGRES_PORT", ""),
+        **env.dict("DB_OTHER_DATA"),
+    },
 }
 
 AUTH_PASSWORD_VALIDATORS = [
