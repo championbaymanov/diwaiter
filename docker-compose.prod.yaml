@@ -10,8 +10,6 @@ services:
     build:
       context: ./
       dockerfile: .docker/dev/backend/Dockerfile
-    env_file:
-      - .prod.env
     ports:
       - ${PORT}:8000
     volumes:
@@ -33,8 +31,6 @@ services:
     hostname: ${PROJECT_NAME}-postgresql
     image: postgres:15
     restart: unless-stopped
-    env_file:
-      - .prod.env
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -53,8 +49,6 @@ services:
       - redis:/data/redis
     tty: true
     restart: unless-stopped
-    env_file:
-      - .prod.env
     networks:
       - diwaiter-network
 
