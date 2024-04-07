@@ -1,0 +1,81 @@
+networks:
+  diwaiter-network:
+    driver: bridge
+
+services:
+
+  backend:
+    container_name: ${PROJECT_NAME}-backend
+    hostname: ${PROJECT_NAME}-backend
+    build:
+      context: ./
+      dockerfile: .docker/dev/backend/Dockerfile
+    env_file:
+      - .prod.env
+    ports:
+      - ${PORT}:8000
+    volumes:
+      - ./:/home/app/backend
+      - static_volume:/home/app/backend/static
+      - media_volume:/home/app/backend/media
+    security_opt:
+      - seccomp:unconfined
+    tty: true
+    restart: unless-stopped
+    networks:
+      - diwaiter-network
+    depends_on:
+      - postgresql
+      - redis
+
+  postgresql:
+    container_name: ${PROJECT_NAME}-postgresql
+    hostname: ${PROJECT_NAME}-postgresql
+    image: postgres:15
+    restart: unless-stopped
+    env_file:
+      - .prod.env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - ${POSTGRES_PORT:-5432}:5432
+    networks:
+      - diwaiter-network
+    tty: true
+
+  redis:
+    container_name: ${PROJECT_NAME}-redis
+    hostname: ${PROJECT_NAME}-redis
+    image: redis:alpine
+    ports:
+      - ${REDIS_PORT:-6379}:6379
+    volumes:
+      - redis:/data/redis
+    tty: true
+    restart: unless-stopped
+    env_file:
+      - .prod.env
+    networks:
+      - diwaiter-network
+
+  nginx:
+    container_name: ${PROJECT_NAME}-nginx
+    image: nginx:stable-alpine
+    ports:
+      - 80:80
+    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+    restart: unless-stopped
+    volumes:
+      - static_volume:/home/app/backend/static
+      - media_volume:/home/app/backend/media
+      - ./.docker/dev/nginx:/etc/nginx/conf.d
+    networks:
+      - diwaiter-network
+
+volumes:
+  static_volume:
+  media_volume:
+  redis:
+    driver: local
+  postgres_data:
+    driver: local
