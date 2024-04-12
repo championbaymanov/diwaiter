@@ -2,10 +2,12 @@ from django.contrib import admin
 from datetime import date
 from django.db.models import Sum
 # Register your models here.
-from .models import Dish, Order, RestaurantModel, OrderItem, OrderComment, WaiterRating, WaiterComment
+from .models import Dish, Order, RestaurantModel, OrderItem, OrderComment, WaiterRating, WaiterComment, Category
 
 
 class DishAdmin(admin.ModelAdmin):
+    list_display = ['id', 'title', 'price']
+
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         if request.user.is_superuser:
@@ -16,8 +18,26 @@ class DishAdmin(admin.ModelAdmin):
 admin.site.register(Dish, DishAdmin)
 
 
+class OrderAdmin(admin.ModelAdmin):
+    list_display = ('id', 'restaurant')  # Отображение имени категории и связанного ресторана
+    list_filter = ('restaurant',)  # Фильтрация по ресторану
+
+
+admin.site.register(Order, OrderAdmin)
+
+
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ('name', 'restaurant')  # Отображение имени категории и связанного ресторана
+    list_filter = ('restaurant',)  # Фильтрация по ресторану
+    search_fields = ('name',)  # Поиск по имени категории
+
+
+admin.site.register(Category, CategoryAdmin)
+
+
 class RestaurantAdmin(admin.ModelAdmin):
-    list_display = ['id', 'title', 'get_total_daily_sales', 'get_total_monthly_sales', 'get_total_sales']
+    list_display = ['id', 'title', 'service_charge_percentage', 'get_total_daily_sales', 'get_total_monthly_sales',
+                    'get_total_sales']
 
     def get_total_daily_sales(self, obj):
         # Подсчитываем общую сумму заказов для ресторана за текущий день
@@ -37,9 +57,7 @@ class RestaurantAdmin(admin.ModelAdmin):
 
 admin.site.register(RestaurantModel, RestaurantAdmin)
 
-admin.site.register(Order)
 admin.site.register(OrderItem)
-
 
 
 class OrderCommentAdmin(admin.ModelAdmin):

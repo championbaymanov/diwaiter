@@ -1,3 +1,6 @@
+import logging
+
+from django.db import transaction
 from rest_framework.exceptions import ValidationError
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
@@ -5,14 +8,14 @@ from rest_framework.generics import ListAPIView, get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 
 from .models import Dish, RestaurantModel, FavoriteRestaurant, Order, OrderItem, Categories, PAYMENT_METHOD_CHOICES,\
-    WaiterRating, WaiterComment, OrderComment
+    WaiterRating, WaiterComment, OrderComment, Category
 from .utils import update
 
 
-class DishSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Dish
-        fields = '__all__'
+# class DishSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Dish
+#         fields = '__all__'
 
 
 class OrderItemsSerializer(serializers.Serializer):
@@ -25,6 +28,27 @@ class OrderItemsSerializer(serializers.Serializer):
     is_active = serializers.BooleanField(source="dish.is_active")
     id = serializers.IntegerField()
     quantity = serializers.IntegerField()
+
+
+class RestaurantSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RestaurantModel
+        fields = ['id', 'title', 'image']
+
+
+class DishSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Dish
+        fields = ['id', 'title', 'image', 'price', 'description']
+
+
+class CategorySerializer(serializers.ModelSerializer):
+    dishes = DishSerializer(many=True, read_only=True)
+    restaurant = RestaurantSerializer(read_only=True)
+
+    class Meta:
+        model = Category
+        fields = ['id', 'name', 'dishes', 'restaurant']
 
 
 class CurrentSerializer(serializers.Serializer):
@@ -173,6 +197,14 @@ class RestaurantDishesAPIView(ListAPIView):
         return self.list(request, *args, **kwargs)
 
 
+class RestaurantDishSerializer(serializers.ModelSerializer):
+    category = serializers.CharField(source='categories.name')
+
+    class Meta:
+        model = Dish
+        fields = ['id', 'title', 'image', 'price', 'description', 'category', 'is_active']
+
+
 class WaiterOrderListSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     table_number = serializers.IntegerField(read_only=True)
@@ -204,6 +236,118 @@ class WaiterOrderSerializer(serializers.Serializer):
         return order
 
 
+class OrderItemSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(required=False)  # Добавьте required=False для поддержки создания новых элементов
+
+    class Meta:
+        model = OrderItem
+        fields = ['id', 'dish', 'quantity']
+
+
+logger = logging.getLogger(__name__)
+
+
+# class OrderUpdateSerializer(serializers.ModelSerializer):
+#     order_items = OrderItemSerializer(many=True)
+#
+#     class Meta:
+#         model = Order
+#         fields = ['order_items']
+#
+#     def update(self, instance, validated_data):
+#         # Убеждаемся, что заказ не закрыт
+#         if instance.is_end:
+#             raise serializers.ValidationError("This order is already closed and cannot be updated.")
+#
+#         items_data = validated_data.get('order_items')
+#
+#         with transaction.atomic():
+#             # Обновляем существующие элементы или создаём новые
+#             for item_data in items_data:
+#                 item_id = item_data.get('id', None)
+#                 if item_id:
+#                     # Обновление существующего элемента заказа
+#                     order_item = OrderItem.objects.get(id=item_id, order=instance)
+#                     order_item.quantity = item_data.get('quantity', order_item.quantity)
+#                     order_item.dish = item_data.get('dish', order_item.dish)
+#                     order_item.save()
+#                 else:
+#                     # Добавление нового элемента заказа
+#                     OrderItem.objects.create(order=instance, **item_data)
+#
+#             # Удаляем элементы, которые не были переданы в запросе
+#             current_ids = [item['id'] for item in items_data if 'id' in item]
+#             instance.order_items.exclude(id__in=current_ids).delete()
+#
+#         instance.calculate_total_amount()  # Пересчитываем сумму заказа
+#         instance.save()
+#         return instance
+
+    # def to_representation(self, instance):
+    #     # Структурированный ответ после обновления заказа
+    #     return {
+    #         "error_code": 0,
+    #         "message": "Order updated successfully",
+    #         "data": super().to_representation(instance)
+    #     }
+
+
+class OrderUpdateSerializer(serializers.ModelSerializer):
+    order_items = OrderItemSerializer(many=True, read_only=False)
+
+    class Meta:
+        model = Order
+        fields = ['table_number', 'restaurant', 'order_items']
+
+    def update(self, instance, validated_data):
+        instance.table_number = validated_data.get('table_number', instance.table_number)
+        instance.save()
+
+        # Очистка существующих элементов заказа и создание новых
+        instance.order_items.all().delete()
+        order_items_data = validated_data.get('order_items')
+        for item_data in order_items_data:
+            OrderItem.objects.create(order=instance, **item_data)
+
+        return instance
+
+
+
+class OrderCloseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = ['is_end']
+
+    def validate(self, data):
+        """
+        Проверяем, что заказ еще не закрыт перед попыткой его закрыть.
+        """
+        if self.instance.is_end:
+            raise serializers.ValidationError("This order is already closed.")
+        return data
+
+    def update(self, instance, validated_data):
+        """
+        Устанавливаем заказ как закрытый и сохраняем изменения.
+        """
+        instance.is_end = True  # Устанавливаем заказ как закрытый
+        instance.save()
+        return instance
+
+    # def to_representation(self, instance):
+    #     """
+    #     Возвращаем кастомизированный ответ после успешного закрытия заказа.
+    #     """
+    #     return {
+    #         "error_code": 0,
+    #         "message": "Order closed successfully",
+    #         "data": {
+    #             "order_id": instance.id,
+    #             "is_end": instance.is_end
+    #         }
+    #     }
+
+
 class OrderHistorySerializer(serializers.Serializer):
     id = serializers.IntegerField()
     table_number = serializers.IntegerField(read_only=True)
@@ -230,7 +374,6 @@ class OrderClosedSerializer(serializers.Serializer):
     restaurant = serializers.IntegerField(read_only=True, source="restaurant_id")
     table_number = serializers.IntegerField(read_only=True)
     
-
 
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:

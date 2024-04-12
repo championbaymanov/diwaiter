@@ -1,6 +1,5 @@
 from conf.settings.prod import INSTALLED_APPS, MIDDLEWARE, BASE_DIR, env
 
-
 """
 START SITE APPS
 """
@@ -15,9 +14,26 @@ INSTALLED_APPS += APPS
 """
 END SITE APPS
 
-START DJANGO DEBUG TOOLBAR
+START DATABASE SETTINGS
 """
 
+DATABASES = {
+    "default": {
+        "ENGINE": env.str("DB_ENGINE", ""),
+        "NAME": env.str("POSTGRES_NAME", ""),
+        "USER": env.str("POSTGRES_USER", ""),
+        "PASSWORD": env.str("POSTGRES_PASSWORD", ""),
+        "HOST": "localhost",
+        "PORT": 5435,
+        **env.dict("DB_OTHER_DATA"),
+    },
+}
+
+"""
+END DATABASE SETTINGS
+
+START DJANGO DEBUG TOOLBAR
+"""
 INTERNAL_IPS = [
     "127.0.0.1",
 ]  # for debug toolbar
@@ -52,7 +68,6 @@ END MIDDLEWARE
 
 START LOGGING
 """
-
 
 LOGGING = {
     "version": 1,
@@ -105,8 +120,6 @@ LOGGING = {
         "django.db.backends": {"level": "DEBUG", "handlers": ["db_request_error", "console"]},
     },
 }
-
-
 
 """
 END LOGGING

@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.db import models
 from django.contrib.auth.base_user import BaseUserManager, AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
@@ -30,6 +32,8 @@ class RestaurantModel(BaseModel):
     owner = models.OneToOneField(
         "users.UserModel", on_delete=models.CASCADE, related_name='restaurant', blank=True, null=True
     )
+    service_charge_percentage = models.DecimalField(max_digits=4, decimal_places=2, default=10.0,
+                                                    help_text="Service charge percentage")
 
     class Meta:
         db_table = 'restaurant'
@@ -40,11 +44,24 @@ class RestaurantModel(BaseModel):
         return self.title
 
 
+class Category(models.Model):
+    name = models.CharField(max_length=100)
+    restaurant = models.ForeignKey(RestaurantModel, on_delete=models.CASCADE, related_name='categories')
+
+    class Meta:
+        verbose_name = 'Category'
+        verbose_name_plural = 'Categories'
+        db_table = 'restaurants_category'
+
+    def __str__(self):
+        return self.name
+
+
 class Dish(models.Model):
     title = models.CharField(max_length=16)
     image = models.ImageField()
     price = models.CharField(max_length=16)
-    categories = models.CharField(max_length=16, choices=Categories.get_choice(), default='Main_meal')
+    categories = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='dishes')
     description = models.CharField(max_length=255, null=True)
     restaurant = models.ForeignKey(RestaurantModel, on_delete=models.CASCADE, related_name='dishes')
     is_active = models.BooleanField(default=True)
@@ -75,8 +92,10 @@ class Order(models.Model):
 
     def calculate_total_amount(self):
         items = self.order_items.all()
-        total = sum([(int(item.quantity) * int(item.dish.price)) for item in items])
-        self.total_amount = total
+        total = sum(Decimal(item.quantity) * Decimal(item.dish.price) for item in items)
+        total = Decimal(total)
+        service_charge = total * (Decimal(self.restaurant.service_charge_percentage) / Decimal(100))
+        self.total_amount = total + service_charge
         self.save()
 
     def __str__(self):

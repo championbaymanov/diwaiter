@@ -1,16 +1,27 @@
 from django.shortcuts import render
 import django_filters
-from .filters import RestaurantFilter
+from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 
+from .filters import RestaurantFilter
+from django.utils import timezone
+from django.db.models import Sum, Avg, Count
+from datetime import timedelta
+from rest_framework import status, serializers
+from rest_framework.views import APIView
+from rest_framework.exceptions import ValidationError, PermissionDenied
 # Create your views here.
 from rest_framework import generics, filters, status, viewsets, views
-from rest_framework.generics import get_object_or_404, ListAPIView, ListCreateAPIView, CreateAPIView, RetrieveUpdateAPIView, DestroyAPIView
+from rest_framework.generics import get_object_or_404, ListAPIView, ListCreateAPIView, CreateAPIView, \
+    RetrieveUpdateAPIView, DestroyAPIView, RetrieveAPIView, UpdateAPIView
 from rest_framework.response import Response
 from django.http import JsonResponse
 from .serializers import RestaurantSerializer, DishSerializer, OrderSerializer, FavoriteRestaurantSerializer, \
     OrderSerializerUpdate, CurrentSerializer, WaiterOrderListSerializer, WaiterOrderSerializer, OrderHistorySerializer, \
-    OrderCheckSerializer, OrderClosedSerializer, FavoriteRestaurantListSerializer, RestaurantDeleteSerializer, CommentSerializer, RatingSerializer, OrderCommentSerializer
-from .models import RestaurantModel, Order, OrderItem, Dish, FavoriteRestaurant, WaiterComment, WaiterRating, OrderComment
+    OrderCheckSerializer, OrderClosedSerializer, FavoriteRestaurantListSerializer, RestaurantDeleteSerializer, \
+    CommentSerializer, RatingSerializer, OrderCommentSerializer, CategorySerializer, OrderUpdateSerializer, \
+    OrderCloseSerializer, RestaurantDishSerializer
+from .models import RestaurantModel, Order, OrderItem, Dish, FavoriteRestaurant, WaiterComment, WaiterRating, \
+    OrderComment, Category
 from rest_framework import generics
 from django_filters import rest_framework as rest_filters
 from src.utils import permissions as auth
@@ -47,6 +58,31 @@ class RestaurantListApiView(generics.ListCreateAPIView):
                          "message": "OK",
                          "data": serializer.data})
 
+
+class CategoryViewSet(viewsets.ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+
+
+class CategoryListByRestaurantView(ListAPIView):
+    serializer_class = CategorySerializer
+
+    def get_queryset(self):
+        """
+        Этот метод переопределяется для фильтрации категорий по restaurant_id, полученному из URL.
+        """
+        restaurant_id = self.kwargs['restaurant_id']
+        return Category.objects.filter(restaurant__id=restaurant_id)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        data = serializer.data
+        return Response({
+            "error_code": 0,
+            "message": "OK",
+            "data": data
+        }, status=status.HTTP_200_OK)
 
 
 class FavoriteRestaurantListView(generics.ListAPIView):
@@ -152,6 +188,7 @@ class CurrentOrderList(generics.ListAPIView):
 class RestaurantDishesAPIView(ListAPIView):
     queryset = Dish.objects.all()
     serializer_class = DishSerializer
+
 
 class RestaurantDishesAPIView(ListAPIView):
     queryset = Dish.objects.all()
@@ -269,15 +306,112 @@ class MyOrdersList(ListAPIView):
                          })
 
 
-class WaiterCreateOrder(ListCreateAPIView):
+class RestaurantMenuView(ListAPIView):
+    serializer_class = RestaurantDishSerializer
     permission_classes = [auth.IsAuthenticated]
-    serializer_class = WaiterOrderSerializer
 
-    def get_serializer_context(self):
-        context = super(WaiterCreateOrder, self).get_serializer_context()
-        print(self.request.user)
-        context['waiter_id'] = self.request.user.waiter.id
-        return context
+    def get_queryset(self):
+        # Убедимся, что запрос делает официант, и вернем список блюд из его ресторана
+        user = self.request.user
+        if hasattr(user, 'waiter') and user.waiter.restaurant:
+            return Dish.objects.filter(restaurant=user.waiter.restaurant, is_active=True)
+        else:
+            return Dish.objects.none()  # Возвращаем пустой список, если у пользователя нет ресторана
+
+
+class WaiterCreateOrder(ListCreateAPIView):
+    serializer_class = WaiterOrderSerializer
+    permission_classes = [auth.IsAuthenticated]
+
+    def get_queryset(self):
+        return Order.objects.filter(restaurant=self.request.user.waiter.restaurant)
+
+    def create(self, request, *args, **kwargs):
+        # Добавляем 'waiter_id' в контекст сериализатора
+        context = self.get_serializer_context()
+        context['waiter_id'] = request.user.waiter.id
+
+        serializer = self.get_serializer(data=request.data, context=context)
+        if serializer.is_valid(raise_exception=True):
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+            return Response({
+                "error_code": 0,
+                "message": "Order created successfully",
+                "data": serializer.data
+            }, status=HTTP_201_CREATED, headers=headers)
+        else:
+            return Response({
+                "error_code": 1,
+                "message": "Failed to create the order",
+                "data": {}
+            }, status=HTTP_400_BAD_REQUEST)
+
+
+# class WaiterOrderUpdateView(UpdateAPIView):
+#     queryset = Order.objects.all()
+#     serializer_class = OrderUpdateSerializer
+#     permission_classes = [auth.IsAuthenticated]
+#
+#     def get_queryset(self):
+#         # Официанты видят только заказы в своем ресторане
+#         return Order.objects.filter(restaurant__waiter__user=self.request.user)
+#
+#     def get_object(self):
+#         # Проверяем, что заказ еще не закрыт и принадлежит текущему официанту
+#         obj = super().get_object()
+#         if obj.is_end:
+#             raise serializers.ValidationError("This order is already closed.")
+#         return obj
+#
+#     def update(self, request, *args, **kwargs):
+#         response = super().update(request, *args, **kwargs)
+#         if response.status_code == 200:
+#             return Response({
+#                 "error_code": 0,
+#                 "message": "Order updated successfully",
+#                 "data": response.data
+#             }, status=response.status_code)
+#         else:
+#             return Response({
+#                 "error_code": 1,
+#                 "message": "Failed to update the order",
+#                 "data": None
+#             }, status=response.status_code)
+
+    # def partial_update(self, request, *args, **kwargs):
+    #     # Разрешаем частичное обновление заказа
+    #     kwargs['partial'] = True
+    #     return self.update(request, *args, **kwargs)
+
+
+class WaiterOrderUpdateView(generics.UpdateAPIView):
+    queryset = Order.objects.all()
+    serializer_class = OrderUpdateSerializer
+    permission_classes = [auth.IsAuthenticated]
+
+    def get_object(self):
+        # Проверяем, что заказ принадлежит текущему пользователю и не завершен
+        obj = super().get_object()
+        if obj.user != self.request.user or obj.is_end:
+            raise PermissionDenied("You cannot edit this order.")
+        return obj
+
+
+class OrderCloseView(APIView):
+    def patch(self, request, pk):
+        order = get_object_or_404(Order, pk=pk)
+        serializer = OrderCloseSerializer(order, data={'is_end': True}, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"error_code": 0, "message": "Order closed successfully"}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get_queryset(self):
+        """
+        Фильтр для заказов текущего официанта.
+        """
+        return Order.objects.filter(restaurant__waiter__user=self.request.user)
 
 
 class WaiterHistory(ListAPIView):
@@ -362,7 +496,6 @@ class WaiterRestaurantListApiView(generics.ListCreateAPIView):
                          "data": serializer.data})
 
 
-
 class CommentCreateView(generics.CreateAPIView):
     queryset = WaiterComment.objects.all()
     serializer_class = CommentSerializer
@@ -386,4 +519,58 @@ class OrderCommentCreateView(generics.CreateAPIView):
     serializer_class = OrderCommentSerializer
     permission_classes = [auth.IsAuthenticated]
 
+
+class WaiterOrderStatisticsView(APIView):
+    permission_classes = [auth.IsAuthenticated]  # Обеспечиваем защиту нашего API
+
+    def get(self, request):
+        today = timezone.now()
+        start_of_today = today.replace(hour=0, minute=0, second=0, microsecond=0)
+        end_of_today = today.replace(hour=23, minute=59, second=59, microsecond=999999)
+
+        start_of_month = today.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+        # Убедимся, что у пользователя есть роль официанта и он привязан к ресторану
+        if hasattr(request.user, 'waiter') and request.user.waiter.restaurant_id:
+            restaurant_id = request.user.waiter.restaurant_id
+        else:
+            return Response({"error_code": 1, "message": "User is not a waiter or not assigned to any restaurant."},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        # Фильтруем заказы по ресторану и официанту
+        orders = Order.objects.filter(restaurant_id=restaurant_id, waiter_id=request.user.waiter.id, is_end=True)
+
+        daily_orders = orders.filter(created_at__range=[start_of_today, end_of_today])
+        monthly_orders = orders.filter(created_at__range=[start_of_month, end_of_today])
+        all_time_orders = orders
+
+        daily_stats = {
+            "total_orders": daily_orders.count(),
+            "total_amount": daily_orders.aggregate(total=Sum('total_amount'))['total'],
+            "average_amount": daily_orders.aggregate(average=Avg('total_amount'))['average']
+        }
+
+        monthly_stats = {
+            "total_orders": monthly_orders.count(),
+            "total_amount": monthly_orders.aggregate(total=Sum('total_amount'))['total'],
+            "average_amount": monthly_orders.aggregate(average=Avg('total_amount'))['average']
+        }
+
+        all_time_stats = {
+            "total_orders": all_time_orders.count(),
+            "total_amount": all_time_orders.aggregate(total=Sum('total_amount'))['total'],
+            "average_amount": all_time_orders.aggregate(average=Avg('total_amount'))['average']
+        }
+
+        response_data = {
+            "daily_stats": daily_stats,
+            "monthly_stats": monthly_stats,
+            "all_time_stats": all_time_stats
+        }
+
+        return Response({
+            "error_code": 0,
+            "message": "OK",
+            "data": response_data
+        }, status=status.HTTP_200_OK)
 

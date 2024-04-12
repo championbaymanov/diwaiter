@@ -5,8 +5,6 @@ from django.db.models import Count
 from .models import UserModel, JwtModel, WaiterModel
 from django.core.exceptions import ValidationError
 
-from ..restaurants.models import RestaurantModel
-
 
 class WaiterForm(forms.ModelForm):
     username = forms.CharField(max_length=255)

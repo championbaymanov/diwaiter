@@ -12,17 +12,23 @@ urlpatterns = [
     path('favorite-restaurants/<int:pk>/', FavoriteRestaurantDeleteView.as_view(), name='favorite-restaurant-detail'),
     path('orders/create/', OrderCreate.as_view(), name='order-create'),
     path('orders/update/<int:pk>/', OrderUpdate.as_view(), name='order-update'),
-    path('orders/current/', CurrentOrderList.as_view(), name='current-order'),  # Отправлять waiter username
-    path("orders/list/", WaitersOrderList.as_view(), name='order-list'),  # Добавить наименование блюд внутрь даты
+    path('orders/current/', CurrentOrderList.as_view(), name='current-order'),
+    path("orders/list/", WaitersOrderList.as_view(), name='order-list'),
     path("my-orders/list/", MyOrdersList.as_view(), name='my-orders-list'),
+    path('waiter/restaurant/menu/', RestaurantMenuView.as_view(), name='restaurant-menu'),
     path('waiter/create/order/', WaiterCreateOrder.as_view(), name='waiter-order-create'),
-    path('waiter/history/', WaiterHistory.as_view(), name='waiter-history'),  # Добавить наименование блюд
+    path('waiter/orders/history/', WaiterHistory.as_view(), name='waiter-order-history'),
     path('order/check/', OrderCheck.as_view(), name='order-check'),
-    path('order/closed/<int:pk>/', OrderClosed.as_view(), name='order-closed'),
+    path('waiter/order/update/<int:pk>/', WaiterOrderUpdateView.as_view(), name='order-update'),
+    path('order/closed/<int:pk>', OrderCloseView.as_view(), name='order-closed'),
     path("waiter/restaurant/", WaiterRestaurantListApiView.as_view(), name='menu-list'),
     path('waiter/comments/', CommentCreateView.as_view(), name='comment-create'),
     path('waiter/ratings/', RatingCreateView.as_view(), name='rating-create'),
     path('order/comments/', OrderCommentCreateView.as_view(), name='order-comment-create'),
+
+    path('restaurant/<int:restaurant_id>/categories/', CategoryListByRestaurantView.as_view(),
+         name='restaurant-categories'),
+    path('waiters/statistics/', WaiterOrderStatisticsView.as_view(), name='waiter-order-statistics'),
 
     # Order list заказы попадали сюда и официант мог видеть и брать на себя
     # My orders Мои заказы когда официант взял их на себя, тогда они приходят сюда
