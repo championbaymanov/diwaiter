@@ -1,4 +1,5 @@
 from rest_framework import status
+from rest_framework.exceptions import ValidationError
 from rest_framework.generics import CreateAPIView
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -23,21 +24,60 @@ class RegistrationApiView(APIView):
         return Response(data=data, status=status.HTTP_201_CREATED)
 
 
-class LoginAPIView(CreateAPIView):
+# class LoginAPIView(CreateAPIView):
+#     serializer_class = LoginSerializer
+#
+#     def post(self, request, *args, **kwargs):
+#         serializer = self.serializer_class(data=request.data)
+#         if serializer.is_valid(raise_exception=False):
+#             request.user = serializer.login()
+#             # return Response(data)
+#             # return Refresh(request=request).create_access_refresh_token
+#             return Response({
+#                 "data": Refresh(request=request).create_access_refresh_token,
+#                 "error_code": 0,
+#                 "message": "OK"
+#             })
+#         else:
+#             # Если пользователь не найден, возвращаем ошибку
+#             return Response({
+#                 "data": None,
+#                 "error_code": 1,
+#                 "message": "User not found"
+#             }, status=status.HTTP_404_NOT_FOUND)
+
+
+class LoginAPIView(APIView):
     serializer_class = LoginSerializer
 
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
-        serializer.is_valid(raise_exception=False)
-        request.user = serializer.login()
-        # return Response(data)
-        print(Refresh(request=request).create_access_refresh_token)
-        # return Refresh(request=request).create_access_refresh_token
-        return Response({
-            "data": Refresh(request=request).create_access_refresh_token,
-            "error_code": 0,
-            "message": "OK"
-        })
+        if serializer.is_valid():
+            try:
+                user = serializer.login()
+                request.user = user
+                # Замените следующую строку на ваш метод создания токена
+                # token = Refresh(request=request).create_access_refresh_token()
+                # token = Refresh(request=request).create_access_refresh_token
+                # token = {'access': 'fake_token', 'refresh': 'fake_refresh_token'}  # Пример
+                return Response({
+                    "data": Refresh(request=request).create_access_refresh_token,
+                    "error_code": 0,
+                    "message": "OK"
+                }, status=status.HTTP_200_OK)
+            except ValidationError as e:
+                # Возвращаем ошибку с информацией, заданной в сериализаторе
+                return Response({
+                    "data": None,
+                    "error_code": 1,
+                    "message": e.detail['detail']
+                }, status=e.status_code)
+        else:
+            return Response({
+                "data": None,
+                "error_code": 1,
+                "message": serializer.errors,
+            }, status=status.HTTP_400_BAD_REQUEST)
 
 
 class LogoutView(APIView):

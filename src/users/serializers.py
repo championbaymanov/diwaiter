@@ -1,5 +1,6 @@
 from django.db.models import Q, QuerySet
 from rest_framework import serializers, status
+from rest_framework.exceptions import ValidationError
 
 from src.utils import exceptions as exc
 from src.base.serializers import BaseSerializer, BaseModelSerializer
@@ -34,17 +35,33 @@ class RegistrationSerializer(BaseModelSerializer):
         return user.save()
 
 
+# class LoginSerializer(serializers.Serializer):
+#     email = serializers.CharField(max_length=255)
+#     password = serializers.CharField(max_length=128, min_length=8)
+#
+#     def login(self) -> UserModel:
+#         user: QuerySet[UserModel] = UserModel.objects.filter(email=self.validated_data["email"])
+#         if len(user) != 1:
+#             raise exc.ValidationError(detail="User not found !", code=status.HTTP_404_NOT_FOUND)
+#         elif not user[0].check_password(self.validated_data["password"]):
+#             raise exc.ValidationError(detail="Password not correct !", code=status.HTTP_401_UNAUTHORIZED)
+#         return user[0]
+
+# UserModel = get_user_model()
+
+
 class LoginSerializer(serializers.Serializer):
-    email = serializers.CharField(max_length=255)
+    email = serializers.EmailField()
     password = serializers.CharField(max_length=128, min_length=8)
 
-    def login(self) -> UserModel:
-        user: QuerySet[UserModel] = UserModel.objects.filter(email=self.validated_data["email"])
-        if len(user) != 1:
-            raise exc.ValidationError(detail="User not found !", code=status.HTTP_404_NOT_FOUND)
-        elif not user[0].check_password(self.validated_data["password"]):
-            raise exc.ValidationError(detail="Password not correct !", code=status.HTTP_401_UNAUTHORIZED)
-        return user[0]
+    def login(self):
+        try:
+            user = UserModel.objects.get(email=self.validated_data["email"])
+            if not user.check_password(self.validated_data["password"]):
+                raise ValidationError({"detail": "Password not correct!"}, code='authorization')
+        except UserModel.DoesNotExist:
+            raise ValidationError({"detail": "User not found!"}, code='not_found')
+        return user
 
 
 class WaiterRegistrationSerializer(BaseModelSerializer):
