@@ -58,7 +58,6 @@ class LoginAPIView(APIView):
                 request.user = user
                 # Замените следующую строку на ваш метод создания токена
                 # token = Refresh(request=request).create_access_refresh_token()
-                # token = Refresh(request=request).create_access_refresh_token
                 # token = {'access': 'fake_token', 'refresh': 'fake_refresh_token'}  # Пример
                 return Response({
                     "data": Refresh(request=request).create_access_refresh_token,
@@ -66,17 +65,18 @@ class LoginAPIView(APIView):
                     "message": "OK"
                 }, status=status.HTTP_200_OK)
             except ValidationError as e:
-                # Возвращаем ошибку с информацией, заданной в сериализаторе
+                errors = [{"key": key, "value": msg[0]} for key, msg in e.detail.items()]
                 return Response({
-                    "data": None,
+                    "errors": errors,
                     "error_code": 1,
-                    "message": e.detail['detail']
-                }, status=e.status_code)
+                    "message": "Validation errors"
+                }, status=status.HTTP_400_BAD_REQUEST)
         else:
+            errors = [{"key": key, "value": msg[0]} for key, msg in serializer.errors.items()]
             return Response({
-                "data": None,
+                "errors": errors,
                 "error_code": 1,
-                "message": serializer.errors,
+                "message": "Invalid data"
             }, status=status.HTTP_400_BAD_REQUEST)
 
 

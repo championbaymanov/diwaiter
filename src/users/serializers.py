@@ -58,9 +58,9 @@ class LoginSerializer(serializers.Serializer):
         try:
             user = UserModel.objects.get(email=self.validated_data["email"])
             if not user.check_password(self.validated_data["password"]):
-                raise ValidationError({"detail": "Password not correct!"}, code='authorization')
+                raise ValidationError({"password": ["Password not correct!"]})
         except UserModel.DoesNotExist:
-            raise ValidationError({"detail": "User not found!"}, code='not_found')
+            raise ValidationError({"email": ["User not found!"]})
         return user
 
 
