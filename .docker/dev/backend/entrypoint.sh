@@ -47,7 +47,7 @@ echo "Django migration -- Successfully!"
 python manage.py collectstatic --no-input
 
 # Start Uvicorn
-# uvicorn main:backend_app --host 0.0.0.0 --port 8000 --workers 4 --reload
-python manage.py runserver 0.0.0.0:8000
+uvicorn conf.asgi:application --host 0.0.0.0 --port 8000 --workers 4 --reload
+# python manage.py runserver 0.0.0.0:8000
 
 exec "$@"
