@@ -4,7 +4,7 @@ from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 
 from .filters import RestaurantFilter
 from django.utils import timezone
-from django.db.models import Sum, Avg, Count
+from django.db.models import Sum, Avg, Count, When
 from datetime import timedelta
 from rest_framework import status, serializers
 from rest_framework.views import APIView
