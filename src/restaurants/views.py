@@ -318,6 +318,22 @@ class RestaurantMenuView(ListAPIView):
         else:
             return Dish.objects.none()  # Возвращаем пустой список, если у пользователя нет ресторана
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
+        if serializer.data:
+            return Response({
+                "error_code": 0,
+                "message": "OK",
+                "data": serializer.data
+            }, status=status.HTTP_200_OK)
+        else:
+            return Response({
+                "error_code": 1,
+                "message": "No active dishes found for this restaurant.",
+                "data": []
+            }, status=status.HTTP_404_NOT_FOUND)
+
 
 class WaiterCreateOrder(ListCreateAPIView):
     serializer_class = WaiterOrderSerializer
