@@ -64,25 +64,25 @@ class CategoryViewSet(viewsets.ModelViewSet):
     serializer_class = CategorySerializer
 
 
-class CategoryListByRestaurantView(ListAPIView):
-    serializer_class = CategorySerializer
+# class CategoryListByRestaurantView(ListAPIView):
+#     serializer_class = CategorySerializer
+#
+#     def get_queryset(self):
+#         """
+#         Этот метод переопределяется для фильтрации категорий по restaurant_id, полученному из URL.
+#         """
+#         restaurant_id = self.kwargs['restaurant_id']
+#         return Category.objects.filter(restaurant__id=restaurant_id)
 
-    def get_queryset(self):
-        """
-        Этот метод переопределяется для фильтрации категорий по restaurant_id, полученному из URL.
-        """
-        restaurant_id = self.kwargs['restaurant_id']
-        return Category.objects.filter(restaurant__id=restaurant_id)
-
-    def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, many=True)
-        data = serializer.data
-        return Response({
-            "error_code": 0,
-            "message": "OK",
-            "data": data
-        }, status=status.HTTP_200_OK)
+    # def list(self, request, *args, **kwargs):
+    #     queryset = self.get_queryset()
+    #     serializer = self.get_serializer(queryset, many=True)
+    #     data = serializer.data
+    #     return Response({
+    #         "error_code": 0,
+    #         "message": "OK",
+    #         "data": data
+    #     }, status=status.HTTP_200_OK)
 
 
 class FavoriteRestaurantListView(generics.ListAPIView):
@@ -306,17 +306,46 @@ class MyOrdersList(ListAPIView):
                          })
 
 
+# class RestaurantMenuView(ListAPIView):
+#     serializer_class = RestaurantDishSerializer
+#     permission_classes = [auth.IsAuthenticated]
+#
+#     def get_queryset(self):
+#         user = self.request.user
+#         if hasattr(user, 'waiter') and user.waiter.restaurant:
+#             return Dish.objects.filter(restaurant=user.waiter.restaurant, is_active=True)
+#         else:
+#             return Dish.objects.none()
+#
+#     def list(self, request, *args, **kwargs):
+#         queryset = self.filter_queryset(self.get_queryset())
+#         serializer = self.get_serializer(queryset, many=True)
+#         if serializer.data:
+#             return Response({
+#                 "error_code": 0,
+#                 "message": "OK",
+#                 "data": serializer.data
+#             }, status=status.HTTP_200_OK)
+#         else:
+#             return Response({
+#                 "error_code": 1,
+#                 "message": "No active dishes found for this restaurant.",
+#                 "data": []
+#             }, status=status.HTTP_404_NOT_FOUND)
+
 class RestaurantMenuView(ListAPIView):
-    serializer_class = RestaurantDishSerializer
+    serializer_class = CategorySerializer
     permission_classes = [auth.IsAuthenticated]
 
     def get_queryset(self):
-        # Убедимся, что запрос делает официант, и вернем список блюд из его ресторана
+        # Получаем доступ к ресторану официанта
         user = self.request.user
         if hasattr(user, 'waiter') and user.waiter.restaurant:
-            return Dish.objects.filter(restaurant=user.waiter.restaurant, is_active=True)
+            # Возвращаем категории для ресторана официанта с предзагруженными блюдами
+            return Category.objects.filter(restaurant=user.waiter.restaurant).prefetch_related('dishes')
         else:
-            return Dish.objects.none()  # Возвращаем пустой список, если у пользователя нет ресторана
+            # Возвращаем пустой список, если у пользователя нет ресторана
+            return Category.objects.none()
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
@@ -330,7 +359,7 @@ class RestaurantMenuView(ListAPIView):
         else:
             return Response({
                 "error_code": 1,
-                "message": "No active dishes found for this restaurant.",
+                "message": "No categories found for this restaurant.",
                 "data": []
             }, status=status.HTTP_404_NOT_FOUND)
 

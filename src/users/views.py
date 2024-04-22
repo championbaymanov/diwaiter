@@ -47,6 +47,39 @@ class RegistrationApiView(APIView):
 #             }, status=status.HTTP_404_NOT_FOUND)
 
 
+# class LoginAPIView(APIView):
+#     serializer_class = LoginSerializer
+#
+#     def post(self, request, *args, **kwargs):
+#         serializer = self.serializer_class(data=request.data)
+#         if serializer.is_valid():
+#             try:
+#                 user = serializer.login()
+#                 request.user = user
+#                 # Замените следующую строку на ваш метод создания токена
+#                 # token = Refresh(request=request).create_access_refresh_token()
+#                 # token = {'access': 'fake_token', 'refresh': 'fake_refresh_token'}  # Пример
+#                 return Response({
+#                     "data": Refresh(request=request).create_access_refresh_token,
+#                     "error_code": 0,
+#                     "message": "OK"
+#                 }, status=status.HTTP_200_OK)
+#             except ValidationError as e:
+#                 errors = [{"key": key, "value": msg[0]} for key, msg in e.detail.items()]
+#                 return Response({
+#                     "errors": errors,
+#                     "error_code": 1,
+#                     "message": "Validation errors"
+#                 }, status=status.HTTP_400_BAD_REQUEST)
+#         else:
+#             errors = [{"key": key, "value": msg[0]} for key, msg in serializer.errors.items()]
+#             return Response({
+#                 "errors": errors,
+#                 "error_code": 1,
+#                 "message": "Invalid data"
+#             }, status=status.HTTP_400_BAD_REQUEST)
+
+
 class LoginAPIView(APIView):
     serializer_class = LoginSerializer
 
@@ -56,11 +89,10 @@ class LoginAPIView(APIView):
             try:
                 user = serializer.login()
                 request.user = user
-                # Замените следующую строку на ваш метод создания токена
-                # token = Refresh(request=request).create_access_refresh_token()
-                # token = {'access': 'fake_token', 'refresh': 'fake_refresh_token'}  # Пример
+                restaurant_id = user.waiter.restaurant.id if hasattr(user, 'waiter') and hasattr(user.waiter, 'restaurant') else None
+                # token = {'access': 'fake_token', 'refresh': 'fake_refresh_token', 'restaurant_id': restaurant_id}  # Пример
                 return Response({
-                    "data": Refresh(request=request).create_access_refresh_token,
+                    "data": { **Refresh(request=request).create_access_refresh_token, "restaurant_id": restaurant_id },
                     "error_code": 0,
                     "message": "OK"
                 }, status=status.HTTP_200_OK)

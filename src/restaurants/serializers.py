@@ -39,16 +39,30 @@ class RestaurantSerializer(serializers.ModelSerializer):
 class DishSerializer(serializers.ModelSerializer):
     class Meta:
         model = Dish
-        fields = ['id', 'title', 'image', 'price', 'description']
+        fields = ['id', 'title', 'image', 'price', 'description', 'is_active']
 
 
 class CategorySerializer(serializers.ModelSerializer):
     dishes = DishSerializer(many=True, read_only=True)
-    restaurant = RestaurantSerializer(read_only=True)
 
     class Meta:
         model = Category
-        fields = ['id', 'name', 'dishes', 'restaurant']
+        fields = ['id', 'name', 'dishes']
+
+
+# class DishSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Dish
+#         fields = ['id', 'title', 'image', 'price', 'description']
+
+
+# class CategorySerializer(serializers.ModelSerializer):
+#     dishes = DishSerializer(many=True, read_only=True)
+#     restaurant = RestaurantSerializer(read_only=True)
+#
+#     class Meta:
+#         model = Category
+#         fields = ['id', 'name', 'dishes', 'restaurant']
 
 
 class CurrentSerializer(serializers.Serializer):

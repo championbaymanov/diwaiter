@@ -50,6 +50,20 @@ class RegistrationSerializer(BaseModelSerializer):
 # UserModel = get_user_model()
 
 
+# class LoginSerializer(serializers.Serializer):
+#     email = serializers.EmailField()
+#     password = serializers.CharField(max_length=128, min_length=8)
+#
+#     def login(self):
+#         try:
+#             user = UserModel.objects.get(email=self.validated_data["email"])
+#             if not user.check_password(self.validated_data["password"]):
+#                 raise ValidationError({"password": ["Password not correct!"]})
+#         except UserModel.DoesNotExist:
+#             raise ValidationError({"email": ["User not found!"]})
+#         return user
+
+
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(max_length=128, min_length=8)
@@ -59,9 +73,16 @@ class LoginSerializer(serializers.Serializer):
             user = UserModel.objects.get(email=self.validated_data["email"])
             if not user.check_password(self.validated_data["password"]):
                 raise ValidationError({"password": ["Password not correct!"]})
+            if not hasattr(user, 'waiter'):
+                raise ValidationError({"user": ["User is not associated with any restaurant."]})
+            return user
         except UserModel.DoesNotExist:
             raise ValidationError({"email": ["User not found!"]})
-        return user
+        except AttributeError:  # Если связь с моделью официанта или рестораном отсутствует
+            raise ValidationError({"user": ["User is not correctly set up as a waiter."]})
+
+    def validate(self, data):
+        return data
 
 
 class WaiterRegistrationSerializer(BaseModelSerializer):

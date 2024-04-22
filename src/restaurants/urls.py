@@ -26,8 +26,8 @@ urlpatterns = [
     path('waiter/ratings/', RatingCreateView.as_view(), name='rating-create'),
     path('order/comments/', OrderCommentCreateView.as_view(), name='order-comment-create'),
 
-    path('restaurant/<int:restaurant_id>/categories/', CategoryListByRestaurantView.as_view(),
-         name='restaurant-categories'),
+    # path('restaurant/<int:restaurant_id>/categories/', CategoryListByRestaurantView.as_view(),
+    #      name='restaurant-categories'),
     path('waiters/statistics/', WaiterOrderStatisticsView.as_view(), name='waiter-order-statistics'),
 
     # Order list заказы попадали сюда и официант мог видеть и брать на себя
