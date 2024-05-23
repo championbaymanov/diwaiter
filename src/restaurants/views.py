@@ -35,7 +35,6 @@ from django.core.exceptions import ObjectDoesNotExist
 class RestaurantListApiView(generics.ListCreateAPIView):
     queryset = RestaurantModel.objects.all()
     serializer_class = RestaurantSerializer
-    permission_classes = (auth.IsAnyAuthenticated,)
 
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
     filterset_class = RestaurantFilter
@@ -87,7 +86,6 @@ class CategoryViewSet(viewsets.ModelViewSet):
 
 class FavoriteRestaurantListView(generics.ListAPIView):
     serializer_class = FavoriteRestaurantListSerializer
-    permission_classes = [auth.IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
@@ -108,7 +106,6 @@ class FavoriteRestaurantListView(generics.ListAPIView):
 class FavoriteRestaurantCreateView(generics.CreateAPIView):
     queryset = FavoriteRestaurant.objects.all()
     serializer_class = FavoriteRestaurantSerializer
-    permission_classes = [auth.IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
@@ -119,7 +116,6 @@ class FavoriteRestaurantCreateView(generics.CreateAPIView):
 
 
 class FavoriteRestaurantDeleteView(generics.DestroyAPIView):
-    permission_classes = [auth.IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
@@ -145,7 +141,6 @@ class FavoriteRestaurantDeleteView(generics.DestroyAPIView):
 
 
 class OrderCreate(generics.CreateAPIView):
-    permission_classes = [auth.IsAuthenticated]
     serializer_class = OrderSerializer
 
     def get_serializer_context(self):
@@ -161,7 +156,6 @@ class CurrentOrderList(generics.ListAPIView):
     )
 
     serializer_class = CurrentSerializer
-    permission_classes = [auth.IsAuthenticated]
 
     def get_object(self):
         return self.queryset.get(user_id=self.request.user.id, is_end=False)
@@ -221,7 +215,6 @@ class RestaurantDishesAPIView(ListAPIView):
 class OrderUpdate(generics.UpdateAPIView):
     queryset = Order.objects.all()
     serializer_class = OrderSerializerUpdate
-    permission_classes = [auth.IsAuthenticated]
 
     # def update(self, request, *args, **kwargs):
     #     return super(OrderUpdate, self).update(request, *args, **kwargs)
@@ -242,7 +235,6 @@ class OrderUpdate(generics.UpdateAPIView):
 class WaitersOrderList(ListCreateAPIView):
     queryset = Order.objects.all()
     serializer_class = WaiterOrderListSerializer
-    permission_classes = [auth.IsAuthenticated]
 
     def get_queryset(self):
         restaurant_id = self.request.user.waiter.restaurant_id
@@ -335,7 +327,6 @@ class MyOrdersList(ListAPIView):
 
 class RestaurantMenuView(ListAPIView):
     serializer_class = CategorySerializer
-    permission_classes = [auth.IsAuthenticated]
 
     def get_queryset(self):
         # Получаем доступ к ресторану официанта
@@ -366,7 +357,6 @@ class RestaurantMenuView(ListAPIView):
 
 class WaiterCreateOrder(ListCreateAPIView):
     serializer_class = WaiterOrderSerializer
-    permission_classes = [auth.IsAuthenticated]
 
     def get_queryset(self):
         return Order.objects.filter(restaurant=self.request.user.waiter.restaurant)
@@ -433,7 +423,6 @@ class WaiterCreateOrder(ListCreateAPIView):
 class WaiterOrderUpdateView(generics.UpdateAPIView):
     queryset = Order.objects.all()
     serializer_class = OrderUpdateSerializer
-    permission_classes = [auth.IsAuthenticated]
 
     def get_object(self):
         # Проверяем, что заказ принадлежит текущему пользователю и не завершен
@@ -544,13 +533,11 @@ class WaiterRestaurantListApiView(generics.ListCreateAPIView):
 class CommentCreateView(generics.CreateAPIView):
     queryset = WaiterComment.objects.all()
     serializer_class = CommentSerializer
-    permission_classes = [auth.IsAuthenticated]
 
 
 class RatingCreateView(generics.CreateAPIView):
     queryset = WaiterRating.objects.all()
     serializer_class = RatingSerializer
-    permission_classes = [auth.IsAuthenticated]
 
     def perform_create(self, serializer):
         instance = serializer.save()
@@ -562,11 +549,9 @@ class RatingCreateView(generics.CreateAPIView):
 class OrderCommentCreateView(generics.CreateAPIView):
     queryset = OrderComment.objects.all()
     serializer_class = OrderCommentSerializer
-    permission_classes = [auth.IsAuthenticated]
 
 
 class WaiterOrderStatisticsView(APIView):
-    permission_classes = [auth.IsAuthenticated]  # Обеспечиваем защиту нашего API
 
     def get(self, request):
         today = timezone.now()
