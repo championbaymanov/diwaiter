@@ -35,17 +35,17 @@ class RegistrationSerializer(BaseModelSerializer):
         return user.save()
 
 
-# class LoginSerializer(serializers.Serializer):
-#     email = serializers.CharField(max_length=255)
-#     password = serializers.CharField(max_length=128, min_length=8)
-#
-#     def login(self) -> UserModel:
-#         user: QuerySet[UserModel] = UserModel.objects.filter(email=self.validated_data["email"])
-#         if len(user) != 1:
-#             raise exc.ValidationError(detail="User not found !", code=status.HTTP_404_NOT_FOUND)
-#         elif not user[0].check_password(self.validated_data["password"]):
-#             raise exc.ValidationError(detail="Password not correct !", code=status.HTTP_401_UNAUTHORIZED)
-#         return user[0]
+class LoginSerializer(serializers.Serializer):
+    email = serializers.CharField(max_length=255)
+    password = serializers.CharField(max_length=128, min_length=8)
+
+    def login(self) -> UserModel:
+        user: QuerySet[UserModel] = UserModel.objects.filter(email=self.validated_data["email"])
+        if len(user) != 1:
+            raise exc.ValidationError(detail="User not found !", code=status.HTTP_404_NOT_FOUND)
+        elif not user[0].check_password(self.validated_data["password"]):
+            raise exc.ValidationError(detail="Password not correct !", code=status.HTTP_401_UNAUTHORIZED)
+        return user[0]
 
 # UserModel = get_user_model()
 
@@ -64,25 +64,25 @@ class RegistrationSerializer(BaseModelSerializer):
 #         return user
 
 
-class LoginSerializer(serializers.Serializer):
-    email = serializers.EmailField()
-    password = serializers.CharField(max_length=128, min_length=8)
+# class LoginSerializer(serializers.Serializer):
+#     email = serializers.EmailField()
+#     password = serializers.CharField(max_length=128, min_length=8)
+#
+#     def login(self):
+#         try:
+#             user = UserModel.objects.get(email=self.validated_data["email"])
+#             if not user.check_password(self.validated_data["password"]):
+#                 raise ValidationError({"password": ["Password not correct!"]})
+#             if not hasattr(user, 'waiter'):
+#                 raise ValidationError({"user": ["User is not associated with any restaurant."]})
+#             return user
+#         except UserModel.DoesNotExist:
+#             raise ValidationError({"email": ["User not found!"]})
+#         except AttributeError:  # Если связь с моделью официанта или рестораном отсутствует
+#             raise ValidationError({"user": ["User is not correctly set up as a waiter."]})
 
-    def login(self):
-        try:
-            user = UserModel.objects.get(email=self.validated_data["email"])
-            if not user.check_password(self.validated_data["password"]):
-                raise ValidationError({"password": ["Password not correct!"]})
-            if not hasattr(user, 'waiter'):
-                raise ValidationError({"user": ["User is not associated with any restaurant."]})
-            return user
-        except UserModel.DoesNotExist:
-            raise ValidationError({"email": ["User not found!"]})
-        except AttributeError:  # Если связь с моделью официанта или рестораном отсутствует
-            raise ValidationError({"user": ["User is not correctly set up as a waiter."]})
-
-    def validate(self, data):
-        return data
+    # def validate(self, data):
+    #     return data
 
 
 class WaiterRegistrationSerializer(BaseModelSerializer):
