@@ -1,72 +1,88 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <title>Список официантов</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f0f0f0;
-        }
-        h2 {
-            color: #333;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-        th, td {
-            text-align: left;
-            padding: 8px;
-            border-bottom: 1px solid #ddd;
-        }
-        th {
-            background-color: #4CAF50;
-            color: white;
-        }
-        tr:hover {background-color: #f5f5f5;}
-    </style>
-</head>
-<body>
-    <h2>Список официантов</h2>
+{% extends "manager/base.html" %}
 
-    <h3>Имя</h3>
-    <table>
-        <tr>
-            <th>Имя</th>
-            <th>Рейтинг</th>
-        </tr>
-        <!-- Замените следующие строки на данные из вашего контекста -->
-        <tr>
-            <td>Анна</td>
-            <td>8.9</td>
-        </tr>
-        <tr>
-            <td>Игорь</td>
-            <td>9.2</td>
-        </tr>
-        <!-- Добавьте больше строк по аналогии -->
-    </table>
+{% block title %}Список официантов{% endblock %}
 
-    <h3>Рейтинг</h3>
-    <table>
-        <tr>
-            <th>Имя</th>
-            <th>Рейтинг</th>
-        </tr>
-        <!-- Замените следующие строки на данные из вашего контекста, отсортированные по рейтингу -->
-        <tr>
-            <td>Игорь</td>
-            <td>9.2</td>
-        </tr>
-        <tr>
-            <td>Анна</td>
-            <td>8.9</td>
-        </tr>
-        <!-- Добавьте больше строк по аналогии -->
+{% block extra_styles %}
+<style>
+    .table-container {
+        margin-top: 20px;
+    }
+    .add-button {
+        margin-bottom: 20px;
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #28a745;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+    }
+    .add-button:hover {
+        background-color: #218838;
+    }
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+    }
+    .action-buttons a, .action-buttons form {
+        display: inline-block;
+        margin: 0;
+    }
+    .action-buttons a {
+        color: #fff;
+        padding: 5px 10px;
+        border-radius: 4px;
+        text-decoration: none;
+    }
+    .edit-button {
+        background-color: #007bff;
+    }
+    .edit-button:hover {
+        background-color: #0056b3;
+    }
+    .delete-button {
+        background-color: #dc3545;
+    }
+    .delete-button:hover {
+        background-color: #c82333;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1 class="my-4">Список официантов</h1>
+<a href="{% url 'waiter_add' %}" class="add-button btn btn-success mb-4">Добавить официанта</a>
+<div class="table-container">
+    <table class="table table-striped">
+        <thead class="thead-dark">
+            <tr>
+                <th scope="col">Имя</th>
+                <th scope="col">Email</th>
+                <th scope="col">Телефон</th>
+                <th scope="col">Средний рейтинг</th>
+                <th scope="col">Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for waiter in object_list %}
+            <tr>
+                <td>{{ waiter.user.username }}</td>
+                <td>{{ waiter.user.email }}</td>
+                <td>{{ waiter.phone }}</td>
+                <td>{{ waiter.average_rating }}</td>
+                <td class="action-buttons">
+                    <a href="{% url 'waiter_edit' waiter.pk %}" class="edit-button">Изменить</a>
+                    <form action="{% url 'waiter_delete' waiter.pk %}" method="post" onsubmit="return confirm('Вы уверены, что хотите удалить этого официанта?');">
+                        {% csrf_token %}
+                        <input type="submit" value="Удалить" class="delete-button">
+                    </form>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">Нет доступных официантов.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
     </table>
-</body>
-</html>
+</div>
+{% endblock %}

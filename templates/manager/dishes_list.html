@@ -1,65 +1,90 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <title>Список блюд</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f0f0f0;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        th, td {
-            border: 1px solid #dddddd;
-            text-align: left;
-            padding: 8px;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        img {
-            width: 50px;
-            height: auto;
-        }
-        .checkbox {
-            margin-left: 10px;
-        }
-    </style>
-</head>
-<body>
-    <h1>Список блюд</h1>
-    <table>
-    <thead>
-        <tr>
-            <th>Название</th>
-            <th>Фото</th>
-            <th>Цена</th>
-            <th>Категория</th>
-            <th>Активный</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for dish in object_list %}
-        <tr>
-            <td>{{ dish.title }}</td>
-            <td><img src="{{ dish.image.url }}" alt="{{ dish.name }}" style="width: 100px;"></td>
-            <td>{{ dish.price }}</td>
-            <td>{{ dish.categories }}</td>
-            <td>{{ dish.is_active|yesno:"Да,Нет" }}</td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="5">Нет доступных блюд.</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+{% extends "manager/base.html" %}
 
-</body>
-</html>
+{% block title %}Список блюд{% endblock %}
+
+{% block extra_styles %}
+<style>
+    .table-container {
+        margin-top: 20px;
+    }
+    .add-button {
+        margin-bottom: 20px;
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #28a745;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+    }
+    .add-button:hover {
+        background-color: #218838;
+    }
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+    }
+    .action-buttons a, .action-buttons form {
+        display: inline-block;
+        margin: 0;
+    }
+    .action-buttons a {
+        color: #fff;
+        padding: 5px 10px;
+        border-radius: 4px;
+        text-decoration: none;
+    }
+    .edit-button {
+        background-color: #007bff;
+    }
+    .edit-button:hover {
+        background-color: #0056b3;
+    }
+    .delete-button {
+        background-color: #dc3545;
+    }
+    .delete-button:hover {
+        background-color: #c82333;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1 class="my-4">Список блюд</h1>
+<a href="{% url 'dish_add' %}" class="add-button btn btn-success mb-4">Добавить блюдо</a>
+<div class="table-container">
+    <table class="table table-striped">
+        <thead class="thead-dark">
+            <tr>
+                <th scope="col">Название</th>
+                <th scope="col">Фото</th>
+                <th scope="col">Цена</th>
+                <th scope="col">Категория</th>
+                <th scope="col">Активный</th>
+                <th scope="col">Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for dish in object_list %}
+            <tr>
+                <td>{{ dish.title }}</td>
+                <td><img src="{{ dish.image.url }}" alt="{{ dish.title }}" style="width: 50px;"></td>
+                <td>{{ dish.price }}</td>
+                <td>{{ dish.categories }}</td>
+                <td>{{ dish.is_active|yesno:"Да,Нет" }}</td>
+                <td class="action-buttons">
+                    <a href="{% url 'dish_edit' dish.pk %}" class="edit-button">Изменить</a>
+                    <form action="{% url 'dish_delete' dish.pk %}" method="post" onsubmit="return confirm('Вы уверены, что хотите удалить это блюдо?');">
+                        {% csrf_token %}
+                        <input type="submit" value="Удалить" class="delete-button">
+                    </form>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6">Нет доступных блюд.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends "manager/base.html" %}
+
+{% block title %}Подкатегории{% endblock %}
+
+{% block extra_styles %}
+<style>
+    .subcategory-card {
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    .subcategory-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+    }
+    .subcategory-header h4 {
+        margin: 0;
+    }
+    .subcategory-body {
+        margin-top: 10px;
+    }
+    .edit-link {
+        text-decoration: none;
+        color: #28a745;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1 class="text-center">Подкатегории {{ category_name }}</h1>
+
+<div class="subcategory-card">
+    <div class="subcategory-header">
+        <h4>Салаты</h4>
+        <a class="edit-link" href="{% url 'edit_subcategories' category %}">Изменить</a>
+    </div>
+    <div class="subcategory-body">
+        Различные виды салатов.
+    </div>
+</div>
+
+<div class="subcategory-card">
+    <div class="subcategory-header">
+        <h4>Чипсы</h4>
+        <a class="edit-link" href="{% url 'edit_subcategories' category %}">Изменить</a>
+    </div>
+    <div class="subcategory-body">
+        Различные виды чипсов.
+    </div>
+</div>
+
+<!-- Добавьте больше подкатегорий здесь -->
+{% endblock %}

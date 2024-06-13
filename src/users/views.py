@@ -19,9 +19,14 @@ class RegistrationApiView(APIView):
     def post(self, request):
         serializer = self.serializer_class(data=request.data, required=False)
         serializer.is_valid(raise_exception=True)
-        data: dict = serializer.validated_data
+        data = serializer.validated_data
         serializer.create(data)
-        return Response(data=data, status=status.HTTP_201_CREATED)
+        response_data = {
+            "error_code": 0,
+            "message": "OK",
+            "data": serializer.data
+        }
+        return Response(response_data, status=status.HTTP_201_CREATED)
 
 
 # class LoginAPIView(CreateAPIView):

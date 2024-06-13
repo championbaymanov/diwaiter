@@ -1,0 +1,72 @@
+{% extends "manager/base.html" %}
+
+{% block title %}Категории{% endblock %}
+
+{% block extra_styles %}
+<style>
+    .category-card {
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    .category-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+    }
+    .category-header h4 {
+        margin: 0;
+    }
+    .category-body {
+        margin-top: 10px;
+    }
+    .category-link {
+        text-decoration: none;
+        color: #007bff;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1 class="text-center">Категории</h1>
+
+<div class="category-card">
+    <div class="category-header">
+        <h4><a class="category-link" href="{% url 'subcategories' 'appetizers' %}">Закуски</a></h4>
+    </div>
+    <div class="category-body">
+        Включает в себя различные закуски, такие как салаты, чипсы, и многое другое.
+    </div>
+</div>
+
+<div class="category-card">
+    <div class="category-header">
+        <h4><a class="category-link" href="{% url 'subcategories' 'main_courses' %}">Основные блюда</a></h4>
+    </div>
+    <div class="category-body">
+        Основные блюда, такие как пицца, бургеры, стейки и паста.
+    </div>
+</div>
+
+<div class="category-card">
+    <div class="category-header">
+        <h4><a class="category-link" href="{% url 'subcategories' 'drinks' %}">Напитки</a></h4>
+    </div>
+    <div class="category-body">
+        Разнообразие напитков, включая безалкогольные и алкогольные.
+    </div>
+</div>
+
+<div class="category-card">
+    <div class="category-header">
+        <h4><a class="category-link" href="{% url 'subcategories' 'desserts' %}">Десерты</a></h4>
+    </div>
+    <div class="category-body">
+        Вкусные десерты, такие как торты, пирожные и мороженое.
+    </div>
+</div>
+
+<!-- Добавьте больше категорий здесь -->
+{% endblock %}

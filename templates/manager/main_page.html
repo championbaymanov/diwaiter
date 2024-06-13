@@ -1,0 +1,196 @@
+{% extends "manager/base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block extra_styles %}
+<style>
+    .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        background-color: #343a40;
+        color: #ffffff;
+        padding: 15px;
+        border-radius: 10px;
+    }
+    .dashboard-header div {
+        text-align: center;
+        flex: 1;
+        margin: 0 10px;
+    }
+    .dashboard-header div h2 {
+        margin: 0;
+        font-size: 1.2rem;
+        color: #f8f9fa;
+    }
+    .dashboard-header div p {
+        margin: 5px 0;
+        font-size: 1rem;
+    }
+    .chart-container {
+        position: relative;
+        margin: 20px auto;
+        padding: 20px;
+        background-color: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        width: 100%;
+        height: 400px; /* Ensure height for consistent display */
+    }
+    .chart-title {
+        text-align: center;
+        margin-bottom: 15px;
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #333;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1 class="text-center">Dashboard</h1>
+<div class="dashboard-header">
+    <div>
+        <h2>Клиенты</h2>
+        <h1>315</h1>
+        <p class="text-danger">-14.7%</p>
+    </div>
+    <div>
+        <h2>Заказы</h2>
+        <h1>2250</h1>
+        <p class="text-danger">-28.6%</p>
+    </div>
+    <div>
+        <h2>Общая Выручка</h2>
+        <h1>329.000.00</h1>
+    </div>
+    <div>
+        <h2>Средний чек</h2>
+        <h1>250.000</h1>
+    </div>
+    <div>
+        <h2>Отзывы</h2>
+        <h2>63.6%</h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="chart-container">
+            <div class="chart-title">Популярные Блюда</div>
+            <canvas id="popularDishesChart"></canvas>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="chart-container">
+            <div class="chart-title">Источники Заказов</div>
+            <canvas id="orderSourceChart"></canvas>
+        </div>
+    </div>
+</div>
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="chart-container">
+            <div class="chart-title">Выручка по Месяцам</div>
+            <canvas id="monthlyRevenueChart"></canvas>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="chart-container">
+            <div class="chart-title">Заказы по Категориям</div>
+            <canvas id="orderCategoryChart"></canvas>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const popularDishesCtx = document.getElementById('popularDishesChart').getContext('2d');
+    const orderSourceCtx = document.getElementById('orderSourceChart').getContext('2d');
+    const monthlyRevenueCtx = document.getElementById('monthlyRevenueChart').getContext('2d');
+    const orderCategoryCtx = document.getElementById('orderCategoryChart').getContext('2d');
+
+    const popularDishesChart = new Chart(popularDishesCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Пицца', 'Бургер', 'Суши', 'Паста', 'Салат', 'Стейк', 'Суп', 'Роллы', 'Десерт', 'Напитки'],
+            datasets: [{
+                label: 'Популярные Блюда',
+                data: [500, 400, 350, 300, 250, 200, 150, 100, 80, 60],
+                backgroundColor: '#42A5F5'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    beginAtZero: true,
+                },
+                y: {
+                    beginAtZero: true,
+                }
+            }
+        }
+    });
+
+    const orderSourceChart = new Chart(orderSourceCtx, {
+        type: 'pie',
+        data: {
+            labels: ['Сайт', 'Мобильное приложение', 'Телефон', 'Физический визит'],
+            datasets: [{
+                label: 'Источники Заказов',
+                data: [50, 30, 15, 5],
+                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#66BB6A']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+        }
+    });
+
+    const monthlyRevenueChart = new Chart(monthlyRevenueCtx, {
+        type: 'line',
+        data: {
+            labels: ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'],
+            datasets: [{
+                label: 'Выручка по Месяцам',
+                data: [10000, 12000, 15000, 13000, 17000, 20000, 21000, 22000, 25000, 23000, 24000, 26000],
+                borderColor: '#42A5F5',
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    beginAtZero: true,
+                },
+                y: {
+                    beginAtZero: true,
+                }
+            }
+        }
+    });
+
+    const orderCategoryChart = new Chart(orderCategoryCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Закуски', 'Основные блюда', 'Напитки', 'Десерты', 'Салаты', 'Супы'],
+            datasets: [{
+                label: 'Заказы по Категориям',
+                data: [25, 35, 20, 10, 5, 5],
+                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#66BB6A', '#FFA726', '#26C6DA']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+        }
+    });
+</script>
+{% endblock %}

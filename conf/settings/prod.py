@@ -10,7 +10,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 SECRET_KEY = env.str("SECRET_KEY")
 
-DEBUG = env.bool("DEBUG", False)
+DEBUG = env.bool("DEBUG", True)
+DEBUG2 = env.bool("DEBUG2", True)
 
 ALLOWED_HOSTS = ["*"]
 INSTALLED_APPS = [
@@ -25,8 +26,6 @@ INSTALLED_APPS = [
     "corsheaders",
     'django_filters',
     'channels',
-
-
     "src.users",
     "src.restaurants",
     "src.manager",
@@ -84,6 +83,14 @@ DATABASES = {
         "PORT": env.int("POSTGRES_PORT", ""),
         **env.dict("DB_OTHER_DATA"),
     },
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.postgresql',
+    #     'NAME': 'diwaiter_db',
+    #     'USER': 'diwaiter_user',
+    #     'PASSWORD': '1234',
+    #     'HOST': 'localhost',
+    #     'PORT': '5435',
+    #     }
 }
 
 AUTH_PASSWORD_VALIDATORS = [

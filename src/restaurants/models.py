@@ -30,7 +30,7 @@ class RestaurantModel(BaseModel):
     title = models.CharField(max_length=255, unique=True)
     image = models.ImageField(upload_to="restaurant/image/")
     owner = models.OneToOneField(
-        "users.UserModel", on_delete=models.CASCADE, related_name='restaurant', blank=True, null=True
+        "users.UserModel", on_delete=models.CASCADE, related_name='owned_restaurant', blank=True, null=True
     )
     service_charge_percentage = models.DecimalField(max_digits=4, decimal_places=2, default=10.0,
                                                     help_text="Service charge percentage")
@@ -59,7 +59,7 @@ class Category(models.Model):
 
 class Dish(models.Model):
     title = models.CharField(max_length=16)
-    image = models.ImageField()
+    image = models.ImageField(upload_to='images/')
     price = models.CharField(max_length=16)
     categories = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='dishes')
     description = models.CharField(max_length=255, null=True)

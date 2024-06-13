@@ -1,0 +1,64 @@
+{% extends "manager/base.html" %}
+
+{% block title %}Отзывы{% endblock %}
+
+{% block extra_styles %}
+<style>
+    .review-card {
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    .review-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+    }
+    .review-header h4 {
+        margin: 0;
+    }
+    .review-rating {
+        color: #FFD700;
+    }
+    .review-body {
+        margin-top: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1 class="text-center">Отзывы</h1>
+
+<div class="review-card">
+    <div class="review-header">
+        <h4>Иван Иванов</h4>
+        <div class="review-rating">★★★★☆</div>
+    </div>
+    <div class="review-body">
+        Очень понравилось обслуживание, блюда вкусные, особенно пицца!
+    </div>
+</div>
+
+<div class="review-card">
+    <div class="review-header">
+        <h4>Мария Смирнова</h4>
+        <div class="review-rating">★★★★★</div>
+    </div>
+    <div class="review-body">
+        Отличное место для семейного ужина. Вернёмся сюда снова.
+    </div>
+</div>
+
+<div class="review-card">
+    <div class="review-header">
+        <h4>Александр Кузнецов</h4>
+        <div class="review-rating">★★★☆☆</div>
+    </div>
+    <div class="review-body">
+        Неплохой ресторан, но немного дороговато.
+    </div>
+</div>
+
+<!-- Добавьте больше отзывов здесь -->
+{% endblock %}

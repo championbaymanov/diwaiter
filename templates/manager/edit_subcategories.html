@@ -1,0 +1,52 @@
+{% extends "manager/base.html" %}
+
+{% block title %}Изменение Подкатегорий{% endblock %}
+
+{% block extra_styles %}
+<style>
+    .form-group {
+        margin-bottom: 15px;
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+    }
+    .form-group input, .form-group textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+    }
+    .btn {
+        padding: 10px 20px;
+        background-color: #28a745;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+        border: none;
+        cursor: pointer;
+    }
+    .btn:hover {
+        background-color: #218838;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1 class="text-center">Изменение Подкатегорий {{ category_name }}</h1>
+
+<form method="post">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="subcategory">Название Подкатегории</label>
+        <input type="text" id="subcategory" name="subcategory" value="Салаты">
+    </div>
+    <div class="form-group">
+        <label for="description">Описание</label>
+        <textarea id="description" name="description">Различные виды салатов.</textarea>
+    </div>
+    <button type="submit" class="btn">Сохранить</button>
+</form>
+
+<!-- Добавьте форму для других подкатегорий здесь -->
+{% endblock %}

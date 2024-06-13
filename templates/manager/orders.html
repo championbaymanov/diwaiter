@@ -1,0 +1,67 @@
+{% extends "manager/base.html" %}
+
+{% block title %}Заказы{% endblock %}
+
+{% block extra_styles %}
+<style>
+    .order-card {
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    .order-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+    }
+    .order-header h4 {
+        margin: 0;
+    }
+    .order-body {
+        margin-top: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1 class="text-center">Заказы</h1>
+
+<div class="order-card">
+    <div class="order-header">
+        <h4>Заказ #1234</h4>
+        <div>Дата: 2024-06-12</div>
+    </div>
+    <div class="order-body">
+        <p>Клиент: Иван Иванов</p>
+        <p>Блюда: Пицца, Салат, Сок</p>
+        <p>Общая сумма: 1200 руб.</p>
+    </div>
+</div>
+
+<div class="order-card">
+    <div class="order-header">
+        <h4>Заказ #1235</h4>
+        <div>Дата: 2024-06-12</div>
+    </div>
+    <div class="order-body">
+        <p>Клиент: Мария Смирнова</p>
+        <p>Блюда: Бургер, Картофель фри, Кола</p>
+        <p>Общая сумма: 800 руб.</p>
+    </div>
+</div>
+
+<div class="order-card">
+    <div class="order-header">
+        <h4>Заказ #1236</h4>
+        <div>Дата: 2024-06-12</div>
+    </div>
+    <div class="order-body">
+        <p>Клиент: Александр Кузнецов</p>
+        <p>Блюда: Суши, Чай</p>
+        <p>Общая сумма: 1500 руб.</p>
+    </div>
+</div>
+
+<!-- Добавьте больше заказов здесь -->
+{% endblock %}

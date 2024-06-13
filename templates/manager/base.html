@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}{% endblock %}</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        .sidebar {
+            height: 100vh;
+            width: 200px;
+            position: fixed;
+            left: 0;
+            top: 0;
+            background-color: #343a40;
+            padding: 20px 0;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+        .sidebar a {
+            display: block;
+            padding: 10px 20px;
+            color: white;
+            text-decoration: none;
+        }
+        .sidebar a:hover {
+            background-color: #495057;
+        }
+        .sidebar .btn {
+            display: block;
+            width: calc(100% - 40px);
+            margin: 10px auto;
+            text-align: left;
+        }
+        .content {
+            margin-left: 200px;
+            padding: 20px;
+        }
+    </style>
+    {% block extra_styles %}{% endblock %}
+</head>
+<body>
+    <div class="sidebar">
+        <a class="btn {% if request.resolver_match.url_name == 'main_page' %}btn-primary{% else %}btn-secondary{% endif %}" href="{% url 'main_page' %}">Дашборд</a>
+        <a class="btn {% if request.resolver_match.url_name == 'dishes_list' %}btn-primary{% else %}btn-secondary{% endif %}" href="{% url 'dishes_list' %}">Блюда</a>
+        <a class="btn {% if request.resolver_match.url_name == 'waiters_list' %}btn-primary{% else %}btn-secondary{% endif %}" href="{% url 'waiters_list' %}">Официанты</a>
+        <a class="btn {% if request.resolver_match.url_name == 'reviews' %}btn-primary{% else %}btn-secondary{% endif %}" href="{% url 'reviews' %}">Отзывы</a>
+        <a class="btn {% if request.resolver_match.url_name == 'orders' %}btn-primary{% else %}btn-secondary{% endif %}" href="{% url 'orders' %}">Заказы</a>
+        <a class="btn {% if request.resolver_match.url_name == 'categories' %}btn-primary{% else %}btn-secondary{% endif %}" href="{% url 'categories' %}">Категории</a>
+    </div>
+    <div class="content">
+        {% block content %}{% endblock %}
+    </div>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>
