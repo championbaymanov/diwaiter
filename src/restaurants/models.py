@@ -111,7 +111,6 @@ class OrderItem(models.Model):
         return f"Order Item #{self.pk}"
 
 
-
 class WaiterComment(models.Model):
     user = models.ForeignKey('users.UserModel', on_delete=models.SET_NULL, related_name='waiter_comment', null=True, blank=True)
     waiter = models.ForeignKey("users.WaiterModel", on_delete=models.SET_NULL, related_name='waiter_comment', null=True, blank=True)

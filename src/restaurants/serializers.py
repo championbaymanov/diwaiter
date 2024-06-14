@@ -137,7 +137,7 @@ class RestaurantDeleteSerializer(serializers.Serializer):
     
 
 class OrderItemSerializer(serializers.Serializer):
-    dish = serializers.IntegerField(required=True, source="dish_id")
+    dish_id = serializers.IntegerField(required=True)
     quantity = serializers.IntegerField(required=True)
 
 
@@ -151,14 +151,24 @@ class OrderSerializer(serializers.Serializer):
     order_items = OrderItemSerializer(many=True)
     is_end = serializers.BooleanField(default=False)
 
-    # waiter = WaiterSerializer(read_only=True)
+    def validate_order_items(self, items):
+        if not items:
+            raise ValidationError("The field 'order_items' cannot be empty")
 
+        # Проверка наличия всех блюд в базе данных
+        dish_ids = [item['dish_id'] for item in items]
+        dishes = Dish.objects.filter(id__in=dish_ids)
+        if dishes.count() != len(dish_ids):
+            raise ValidationError("Some of the dishes do not exist")
+
+        return items
+
+    @transaction.atomic
     def create(self, validated_data: dict):
-        if not (items := validated_data.pop("order_items")):
-            raise ValidationError("The field 'items' cannot be empty")
+        items = validated_data.pop("order_items")
         order = Order.objects.create(user_id=self.context["user_id"], **validated_data)
         for item_data in items:
-            OrderItem.objects.create(order=order, **item_data)
+            OrderItem.objects.create(order=order, dish_id=item_data['dish_id'], quantity=item_data['quantity'])
         order.calculate_total_amount()
         return order
 
