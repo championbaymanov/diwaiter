@@ -96,8 +96,14 @@ class WaiterListView(LoginRequiredMixin, ListView):
     login_url = 'login_page'
     model = WaiterModel
     template_name = 'manager/waiters_list.html'
-    queryset = WaiterModel.objects.select_related('restaurant', 'user').all()
+    # queryset = WaiterModel.objects.select_related('restaurant', 'user').all()
 
+    def get_queryset(self):
+        user = self.request.user
+        if user.restaurant:
+            waiters = WaiterModel.objects.filter(restaurant_id=user.restaurant)
+            return waiters
+        return WaiterModel.objects.none()
 # class WaiterCreateView(LoginRequiredMixin, CreateView):
 #     login_url = 'login_page'
 #     model = WaiterModel
@@ -110,7 +116,13 @@ class DishListView(LoginRequiredMixin, ListView):
     login_url = 'login_page'
     model = Dish
     template_name = 'manager/dishes_list.html'
-    queryset = Dish.objects.all()
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.restaurant:
+            dishes = Dish.objects.filter(restaurant_id=user.restaurant)
+            return dishes
+        return Dish.objects.none()
 
 class DishCreateView(LoginRequiredMixin, CreateView):
     login_url = 'login_page'
@@ -207,7 +219,7 @@ class ManagerLoginView(View):
         user = authenticate(request, email=email, password=password)
         if user is not None:
             login(request, user)
-            return redirect('main_page')  # URL для перенаправления после успешного входа
+            return redirect('main_page')
         else:
             return render(request, 'manager/index.html', {'error': 'Invalid credentials'})
 

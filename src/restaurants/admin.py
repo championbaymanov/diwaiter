@@ -36,9 +36,9 @@ admin.site.register(Category, CategoryAdmin)
 
 
 class RestaurantAdmin(admin.ModelAdmin):
-    list_display = ['id', 'title', 'service_charge_percentage', 'get_total_daily_sales', 'get_total_monthly_sales',
+    list_display = ['id', 'title', 'owner', 'service_charge_percentage', 'get_total_daily_sales', 'get_total_monthly_sales',
                     'get_total_sales']
-
+#
     def get_total_daily_sales(self, obj):
         # Подсчитываем общую сумму заказов для ресторана за текущий день
         total_sales = Order.objects.filter(restaurant=obj, created_at__date=date.today()).aggregate(total=Sum('total_amount'))['total']
@@ -53,6 +53,12 @@ class RestaurantAdmin(admin.ModelAdmin):
         # Подсчитываем общую сумму заказов для ресторана за все время
         total_sales = Order.objects.filter(restaurant=obj).aggregate(total=Sum('total_amount'))['total']
         return total_sales if total_sales else 0
+
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        if obj.owner:
+            obj.owner.restaurant = obj
+            obj.owner.save()
 
 
 admin.site.register(RestaurantModel, RestaurantAdmin)

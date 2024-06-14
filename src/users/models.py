@@ -94,7 +94,6 @@ class UserModel(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
-    restaurant = models.ForeignKey(RestaurantModel, on_delete=models.SET_NULL, null=True, blank=True)
 
     objects = UserManager()
     USERNAME_FIELD = 'email'
@@ -107,6 +106,10 @@ class UserModel(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+
+    @property
+    def restaurant(self):
+        return self.owned_restaurant
 
 
 class JwtModel(BaseModel):
