@@ -8,7 +8,7 @@ from . import views
 urlpatterns = [
     path('restaurant/dashboard', DashboardTemplateView.as_view(), name='restaurant_dashboard'),
     # path('create/restaurant', create_admin_view, name='create-admin'),
-    path('restaurant/login', ManagerLoginView.as_view(), name='login_page'),
+    path('', ManagerLoginView.as_view(), name='login_page'),
     path('restaurant/dishes/', DishListView.as_view(), name='dishes_list'),
     path('restaurant/dishes/add/', DishCreateView.as_view(), name='dish_add'),
     path('restaurant/dishes/<int:pk>/edit', DishUpdateView.as_view(), name='dish_edit'),

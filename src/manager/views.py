@@ -6,9 +6,11 @@ from django.contrib import messages
 from django.shortcuts import redirect, render, get_object_or_404
 from django.views import View
 from django.urls import reverse_lazy
-from src.restaurants.models import RestaurantModel, Dish, Categories, Category
+from src.restaurants.models import RestaurantModel, Dish, Categories, Category, Order
 from .forms import UserManagerLoginForm, DishForm, WaiterForm, UserRegistrationForm
 from src.users.models import UserModel, WaiterModel
+from datetime import date
+from django.db.models import Sum
 
 
 class DashboardTemplateView(LoginRequiredMixin, View):
@@ -149,13 +151,40 @@ class DishUpdateView(LoginRequiredMixin, UpdateView):
         return super().form_valid(form)
 
 
-
 class MainPageView(LoginRequiredMixin, View):
     login_url = 'login_page'
     template_name = 'manager/main_page.html'
 
     def get(self, request, *args, **kwargs):
-        return render(request, self.template_name)
+        user = request.user
+        try:
+            restaurant = user.owned_restaurant
+        except RestaurantModel.DoesNotExist:
+            return render(request, self.template_name, {'error': 'No restaurant found for user.'})
+
+        total_daily_sales = self.get_total_daily_sales(restaurant)
+        total_monthly_sales = self.get_total_monthly_sales(restaurant)
+        total_sales = self.get_total_sales(restaurant)
+
+        context = {
+            'restaurant': restaurant,
+            'total_daily_sales': total_daily_sales,
+            'total_monthly_sales': total_monthly_sales,
+            'total_sales': total_sales
+        }
+        return render(request, self.template_name, context)
+
+    def get_total_daily_sales(self, restaurant):
+        total_sales = Order.objects.filter(restaurant=restaurant, created_at__date=date.today()).aggregate(total=Sum('total_amount'))['total']
+        return total_sales if total_sales else 0
+
+    def get_total_monthly_sales(self, restaurant):
+        total_sales = Order.objects.filter(restaurant=restaurant, created_at__month=date.today().month, created_at__year=date.today().year).aggregate(total=Sum('total_amount'))['total']
+        return total_sales if total_sales else 0
+
+    def get_total_sales(self, restaurant):
+        total_sales = Order.objects.filter(restaurant=restaurant).aggregate(total=Sum('total_amount'))['total']
+        return total_sales if total_sales else 0
 
 
 class ReviewsView(LoginRequiredMixin, View):
